@@ -1,8 +1,8 @@
 
+library(plyr)
 library(dplyr)
 library(tidyverse)
 library(lubridate)
-library(plyr)
 library(caTools)
 library(ggplot2)
 library(ggthemes)
@@ -30,10 +30,14 @@ colnames (Happiness) <- c("Country", "Happiness.Rank", "Happiness.Score",
 
 # Country: Name of countries
 # Happiness.Rank: Rank of the country based on the Happiness Score
-# Happiness.Score: Happiness measurement on a scale of 0 t0 10
+# Happiness.Score: Happiness measurement on a scale of 0 to 10
 # Whisker.High: Upper confidence interval of happiness score
 # Whisker.Low: Lower confidence interval of happiness score
 # Economy: The value of all final goods and services produced within a nation in a given year
+# Per capita GDP is a measure of the total output of a country that takes 
+# the gross domestic product (GDP) and divides it by the number of people in 
+#that country. The per capita GDP is especially useful when comparing one 
+#country to another, because it shows the relative performance of the countries.
 # Family: Importance of having a family
 # Life.Expectancy: Importance of health and amount of time prople expect to live
 # Freedom: Importance of freedom in each country
@@ -98,7 +102,7 @@ corrgram(Happiness, order = TRUE, lower.panel = panel.shade,
 
 ### Obviously there is an inverse correlation between "Happiness Rank"  and all the other
 # numerical variables. In other words, the lower the happiness rank, the higher the happiness score,
-# and the higher seven other factors that contribute to happiness.
+# and the higher the other seven factors that contribute to happiness.
 
 # So let's remove Happiness rank, and see the correlation again.
 
@@ -140,7 +144,7 @@ corrgram(Happiness[, 4:11], order=TRUE,
 corrgram(Happiness[, 4:11], order=TRUE,
          upper.panel=panel.cor, main="Happiness Matrix")
 
-## According to the cor plots, these three factors play a significant role in contributing to
+## According to the corrplots, these three factors play a significant role in contributing to
 # happpiness: Economy, life expectancy, family
 # Economy > Life.Expectancy > Family > Freedom > Dystopia.Residual > Trust > Generosity
 
@@ -163,8 +167,10 @@ Happiness.Continent.melt <- melt(Happiness.Continent)
 # Faceting
 ggplot(Happiness.Continent.melt, aes(y=value, x=Continent, color=Continent, fill=Continent)) + 
   geom_bar( stat="identity") +    
-  facet_wrap(~variable) +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+  facet_wrap(~variable) + theme_bw() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  labs(title = "Average value of happiness variables for different continents", 
+       y = "Average value") 
 
 # We can see that Australia has the highest average in all fields except dystopia residual, after that 
 # Europe, North America, and South America are roughly the same regarding 
@@ -173,33 +179,34 @@ ggplot(Happiness.Continent.melt, aes(y=value, x=Continent, color=Continent, fill
 
 ##### Let's see the correlation between variables for each continent
 
+Var <- c("Continent", "Trust","Economy","Family","Life.Expectancy","Freedom","Generosity",
+          "Happiness.Score","Dystopia.Residual")
 
-
-p1 <- corrgram(Happiness %>% select(-3) %>% filter(Continent == "Africa"), order=TRUE,
+corrgram(Happiness[,Var] %>% filter(Continent == "Africa"), order=TRUE,
          upper.panel=panel.cor, main="Happiness Matrix for Africa")
 # Correlation between "Happiness Score" and the other variables in Africa:
 # Economy > Family > Life.Expectancy > Dystopia.Residual > Freedom
 # There is no correlation between happiness score and trust.
 # There is an inverse correlation between happiness score and generosity.
 
-p2 <- corrgram(Happiness %>% select(-3) %>% filter(Continent == "Asia"), order=TRUE,
+corrgram(Happiness %>% select(-3) %>% filter(Continent == "Asia"), order=TRUE,
          upper.panel=panel.cor, main="Happiness Matrix for Asia")
 # Correlation between "Happiness Score" and the other variables in Asia:
 # Economy > Family > Life.Expectancy > Freedom > Trust > Dystopia.Residual
 # There is no correlation between happiness score and generosity.
 
-p3 <- corrgram(Happiness %>% select(-3) %>% filter(Continent == "Europe"), order=TRUE,
+corrgram(Happiness %>% select(-3) %>% filter(Continent == "Europe"), order=TRUE,
          upper.panel=panel.cor, main="Happiness Matrix for Europe")
 # Correlation between "Happiness Score" and the other variables in Europe:
 # Freedom > Trust > Economy > Family > Dystopia.Residual > Life.Expectancy > Generosity
 
-p4 <- corrgram(Happiness %>% select(-3) %>% filter(Continent == "North America"), order=TRUE,
+corrgram(Happiness %>% select(-3) %>% filter(Continent == "North America"), order=TRUE,
          upper.panel=panel.cor, main="Happiness Matrix for North America")
 # Correlation between "Happiness Score" and the other variables in North America:
 # Life.Expectancy > Economy > Freedom > Family > Dystopia.Residual > Trust
 # There is an inverse correlation between happiness score and generosity.
 
-p5 <- corrgram(Happiness %>% select(-3) %>% filter(Continent == "South America"), order=TRUE,
+corrgram(Happiness %>% select(-3) %>% filter(Continent == "South America"), order=TRUE,
          upper.panel=panel.cor, main="Happiness Matrix for South America")
 # Correlation between "Happiness Score" and the other variables in South America:
 # Dystopia.Residual > Economy > Life.Expectancy > Freedom > Generosity > Trust > Family
@@ -213,15 +220,19 @@ gg1 <- ggplot(Happiness,
                   y=Happiness.Score,
                   color=Continent))+
   geom_point() + theme_bw() +
-  theme(axis.title = element_text(family = "Helvetica", size = (8)))
+  theme(axis.title = element_text(family = "Helvetica", size = (8))) +
+  labs(title = "Scatter plot")
+
 
 gg2 <- ggplot(Happiness , aes(x = Continent, y = Happiness.Score)) +
   geom_boxplot(aes(fill=Continent)) + theme_bw() +
-  theme(axis.title = element_text(family = "Helvetica", size = (8)))
+  theme(axis.title = element_text(family = "Helvetica", size = (8))) +
+  labs(title = "Box plot")
 
 gg3 <- ggplot(Happiness,aes(x=Continent,y=Happiness.Score))+
   geom_violin(aes(fill=Continent),alpha=0.7)+ theme_bw() +
-  theme(axis.title = element_text(family = "Helvetica", size = (8)))
+  theme(axis.title = element_text(family = "Helvetica", size = (8))) +
+  labs(title = "Violin plot")
 
 # Compute descriptive statistics by groups
 stable <- desc_statby(Happiness, measure.var = "Happiness.Score",
@@ -243,54 +254,55 @@ ggarrange(gg3, stable.p, ncol = 1, nrow = 2)
 ### The correlation between happiness score and the other seven factors
 # in the happiness dataset for different continents
 
-ggplot(Happiness, aes(x = Life.Expectancy, y = Happiness.Score)) + 
+
+ggplot(subset(Happiness, Happiness$Continent != "Australia"), aes(x = Life.Expectancy, y = Happiness.Score)) + 
   geom_point(aes(color=Continent), size = 3, alpha = 0.8) +  
   geom_smooth(aes(color = Continent, fill = Continent), 
               method = "lm", fullrange = TRUE) +
   facet_wrap(~Continent) +
-  theme_bw()
+  theme_bw() + labs(title = "Scatter plot with regression line")
 
 ggplot(Happiness, aes(x = Economy, y = Happiness.Score)) + 
   geom_point(aes(color=Continent), size = 3, alpha = 0.8) +  
   geom_smooth(aes(color = Continent, fill = Continent), 
               method = "lm", fullrange = TRUE) +
   facet_wrap(~Continent) +
-  theme_bw()
+  theme_bw() + labs(title = "Scatter plot with regression line")
 
 ggplot(Happiness, aes(x = Freedom, y = Happiness.Score)) + 
   geom_point(aes(color=Continent), size = 3, alpha = 0.8) +  
   geom_smooth(aes(color = Continent, fill = Continent), 
               method = "lm", fullrange = TRUE) +
   facet_wrap(~Continent) +
-  theme_bw()
+  theme_bw() + labs(title = "Scatter plot with regression line")
 
 ggplot(Happiness, aes(x = Trust, y = Happiness.Score)) + 
   geom_point(aes(color=Continent), size = 3, alpha = 0.8) +  
   geom_smooth(aes(color = Continent, fill = Continent), 
               method = "lm", fullrange = TRUE) +
   facet_wrap(~Continent) +
-  theme_bw()
+  theme_bw() + labs(title = "Scatter plot with regression line")
 
 ggplot(Happiness, aes(x = Generosity, y = Happiness.Score)) + 
   geom_point(aes(color=Continent), size = 3, alpha = 0.8) +  
   geom_smooth(aes(color = Continent, fill = Continent), 
               method = "lm", fullrange = TRUE) +
   facet_wrap(~Continent) +
-  theme_bw()
+  theme_bw() + labs(title = "Scatter plot with regression line")
 
 ggplot(Happiness, aes(x = Family, y = Happiness.Score)) + 
   geom_point(aes(color=Continent), size = 3, alpha = 0.8) +  
   geom_smooth(aes(color = Continent, fill = Continent), 
               method = "lm", fullrange = TRUE) +
   facet_wrap(~Continent) +
-  theme_bw()
+  theme_bw() + labs(title = "Scatter plot with regression line")
 
 ggplot(Happiness, aes(x = Dystopia.Residual, y = Happiness.Score)) + 
   geom_point(aes(color=Continent), size = 3, alpha = 0.8) +  
   geom_smooth(aes(color = Continent, fill = Continent), 
               method = "lm", fullrange = TRUE) +
   facet_wrap(~Continent) +
-  theme_bw()
+  theme_bw() + labs(title = "Scatter plot with regression line")
 
 #####################
 
@@ -517,8 +529,7 @@ scatter3D(Happiness$Family, Happiness$Economy, Happiness$Happiness.Score, phi = 
 ####
 
 # Splitting the dataset into the Training set and Test set
-# install.packages('caTools')
-library(caTools)
+
 set.seed(123)
 dataset <- Happiness[4:11]
 split = sample.split(dataset$Happiness.Score, SplitRatio = 0.8)
@@ -531,9 +542,7 @@ test_set = subset(dataset, split == FALSE)
 # Fitting Multiple Linear Regression to the Training set
 regressor_lm = lm(formula = Happiness.Score ~ .,
                data = training_set)
-
 summary(regressor_lm)
-
 ####### Predicting the Test set results
 y_pred_lm = predict(regressor_lm, newdata = test_set)
 
@@ -545,6 +554,7 @@ gg.lm <- ggplot(Pred_Actual_lm, aes(Actual, Prediction )) +
        y = "Predicted happiness score") +
   theme(plot.title = element_text(family = "Helvetica", face = "bold", size = (15)), 
         axis.title = element_text(family = "Helvetica", size = (10)))
+gg.lm
 
 MSE.lm <- sum((test_set$Happiness.Score - y_pred_lm)^2)/nrow(test_set)
 
@@ -578,10 +588,7 @@ gg.svr <- ggplot(Pred_Actual_svr, aes(Actual, Prediction )) +
   theme(plot.title = element_text(family = "Helvetica", face = "bold", size = (15)), 
         axis.title = element_text(family = "Helvetica", size = (10)))
 
-
-# In general, multiple linear regression seems to predict more accurately than SVR.
-# But we should indicate that SVR also did its job good enough!
-
+gg.svr
 ################################## Decision Tree Regression
 
 library(rpart)
@@ -607,9 +614,7 @@ gg.dt <- ggplot(Pred_Actual_dt, aes(Actual, Prediction )) +
 library(rpart.plot)
 prp(regressor_dt)
 
-# Obviously, decision tree does not seem to be a good algorithm for this problem.
-
-
+gg.dt
 ########################################## Random Forest Regression
 
 # Fitting Random Forest Regression to the dataset
@@ -632,6 +637,8 @@ gg.rf <- ggplot(Pred_Actual_rf, aes(Actual, Prediction )) +
        y = "Predicted happiness score") +
   theme(plot.title = element_text(family = "Helvetica", face = "bold", size = (15)), 
         axis.title = element_text(family = "Helvetica", size = (10)))
+
+gg.rf
 
 # Randorm forest did a better job than decision tree.
 
@@ -656,19 +663,22 @@ gg.nn <- ggplot(Pred_Actual_nn, aes(Actual, V1 )) +
   theme(plot.title = element_text(family = "Helvetica", face = "bold", size = (15)), 
       axis.title = element_text(family = "Helvetica", size = (10)))
     
-
+gg.nn
 MSE.nn <- sum((test_set$Happiness.Score - predicted.nn.values$net.result)^2)/nrow(test_set)
 
 
 print(paste(MSE.lm,MSE.nn))
+
+print(paste("Mean Squared Error (Multiple Linear Regression):", MSE.lm))
+print(paste("Mean Squared Error (Neural Net):", MSE.nn))
 ######## Real versus predicted for different machine learning algorithms
 
 ggarrange(gg.lm, gg.svr, gg.dt, gg.rf, gg.nn, ncol = 2, nrow = 3)
 
-# Multiple linear regression and neural net did the best job,
-# and predicted approximately the same.
-# SVR and random forest stood in the second place regarding accuracy in prediction.
-# And finally decision tree was the worst algorithm to predict happiness scores.
+# Multiple Linear regression is the best predictor. After that, Neural Net do the best job.
+# SVR and Random Forest predicted pretty the same.
+# Finally Decision Tree is the worst predictor for this specific dataset.
+
 
 
 
